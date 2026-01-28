@@ -22,6 +22,17 @@ LOG = structlog.get_logger()
 
 @base_router.get(
     "/debug-session/{workflow_permanent_id}",
+    response_model=DebugSession,
+    tags=["Debug Sessions"],
+    description="Get or create a debug session for a workflow. Creates a new session with a browser session if one doesn't exist. Automatically renews the browser session timeout to 4 hours.",
+    summary="Get or create debug session",
+    responses={
+        200: {"description": "Successfully retrieved or created debug session"},
+        404: {"description": "Workflow not found"},
+    },
+)
+@base_router.get(
+    "/debug-session/{workflow_permanent_id}/",
     include_in_schema=False,
 )
 async def get_or_create_debug_session_by_user_and_workflow_permanent_id(
@@ -96,6 +107,16 @@ async def get_or_create_debug_session_by_user_and_workflow_permanent_id(
 
 @base_router.post(
     "/debug-session/{workflow_permanent_id}/new",
+    response_model=DebugSession,
+    tags=["Debug Sessions"],
+    description="Create a new debug session with a fresh browser session. Completes any existing debug sessions and closes their browser sessions. Returns an existing session if it's less than 30 seconds old to prevent spam.",
+    summary="Create new debug session",
+    responses={
+        200: {"description": "Successfully created new debug session"},
+    },
+)
+@base_router.post(
+    "/debug-session/{workflow_permanent_id}/new/",
     include_in_schema=False,
 )
 async def new_debug_session(
@@ -244,6 +265,16 @@ async def new_debug_session(
 @base_router.get(
     "/debug-session/{workflow_permanent_id}/block-outputs",
     response_model=dict[str, dict[str, t.Any]],
+    tags=["Debug Sessions"],
+    description="Get the outputs of all blocks for a workflow's debug session. Useful for debugging workflow execution and viewing intermediate results.",
+    summary="Get block outputs for debug session",
+    responses={
+        200: {"description": "Successfully retrieved block outputs"},
+    },
+)
+@base_router.get(
+    "/debug-session/{workflow_permanent_id}/block-outputs/",
+    response_model=dict[str, dict[str, t.Any]],
     include_in_schema=False,
 )
 async def get_block_outputs_for_debug_session(
@@ -262,10 +293,18 @@ async def get_block_outputs_for_debug_session(
 
 @base_router.get(
     "/debug-session/{debug_session_id}/runs",
-    include_in_schema=False,
+    response_model=DebugSessionRuns,
+    tags=["Debug Sessions"],
+    description="Get all workflow runs associated with a debug session. Includes the debug session details and all runs executed within it.",
+    summary="Get debug session runs",
+    responses={
+        200: {"description": "Successfully retrieved debug session runs"},
+        404: {"description": "Debug session not found"},
+    },
 )
 @base_router.get(
     "/debug-session/{debug_session_id}/runs/",
+    response_model=DebugSessionRuns,
     include_in_schema=False,
 )
 async def get_debug_session_runs(

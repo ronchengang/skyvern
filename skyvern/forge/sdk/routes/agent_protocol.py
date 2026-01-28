@@ -594,6 +594,18 @@ async def create_workflow(
 
 @base_router.post(
     "/workflows/create-from-prompt",
+    response_model=dict[str, Any],
+    tags=["Workflows"],
+    description="Create a new workflow from a natural language prompt. Uses AI to generate the workflow definition, blocks, and parameters based on the user's description.",
+    summary="Create workflow from prompt",
+    responses={
+        200: {"description": "Successfully created workflow from prompt"},
+        400: {"description": "Invalid prompt or failed to create workflow"},
+    },
+)
+@base_router.post(
+    "/workflows/create-from-prompt/",
+    response_model=dict[str, Any],
     include_in_schema=False,
 )
 async def create_workflow_from_prompt(
@@ -1228,7 +1240,6 @@ async def update_folder(
 @base_router.delete(
     "/folders/{folder_id}",
     tags=["Workflows"],
-    include_in_schema=False,
     description="Delete a folder. Optionally delete all workflows in the folder.",
     summary="Delete folder",
     responses={
@@ -1524,8 +1535,19 @@ async def get_run_timeline(
 
 @base_router.post(
     "/run/workflows/blocks",
-    include_in_schema=False,
     response_model=BlockRunResponse,
+    tags=["Workflows"],
+    description="Execute one or more blocks from a workflow. Creates or reuses a workflow run and executes the specified blocks, returning the workflow run ID and status.",
+    summary="Run workflow blocks",
+    responses={
+        200: {"description": "Successfully initiated block execution"},
+        400: {"description": "Invalid block labels or workflow not found"},
+    },
+)
+@base_router.post(
+    "/run/workflows/blocks/",
+    response_model=BlockRunResponse,
+    include_in_schema=False,
 )
 async def run_block(
     request: Request,
@@ -1817,7 +1839,14 @@ async def cancel_workflow_run(
 
 @base_router.post(
     "/workflows/runs/{workflow_run_id}/continue",
-    include_in_schema=False,
+    tags=["Workflows"],
+    description="Resume execution of a paused workflow run. The workflow will continue from where it was paused.",
+    summary="Continue workflow run",
+    status_code=http_status.HTTP_202_ACCEPTED,
+    responses={
+        202: {"description": "Successfully resumed workflow run"},
+        404: {"description": "Workflow run not found or not in paused state"},
+    },
 )
 @base_router.post("/workflows/runs/{workflow_run_id}/continue/", include_in_schema=False)
 async def continue_workflow_run(
@@ -2272,10 +2301,18 @@ async def get_workflow_run_with_workflow_id(
 
 @base_router.get(
     "/workflows/runs/{workflow_run_id}",
-    include_in_schema=False,
+    response_model=WorkflowRunWithWorkflowResponse,
+    tags=["Workflows"],
+    description="Get a workflow run with its associated workflow details. Returns the workflow run status, workflow definition, and all related information.",
+    summary="Get workflow run with workflow",
+    responses={
+        200: {"description": "Successfully retrieved workflow run"},
+        404: {"description": "Workflow run not found"},
+    },
 )
 @base_router.get(
     "/workflows/runs/{workflow_run_id}/",
+    response_model=WorkflowRunWithWorkflowResponse,
     include_in_schema=False,
 )
 async def get_workflow_and_run_from_workflow_run_id(
@@ -2676,16 +2713,19 @@ async def get_api_keys(
 
 @base_router.post(
     "/upload_file",
-    tags=["Files"],
-    openapi_extra={
-        "x-fern-sdk-method-name": "upload_file",
-    },
-    include_in_schema=True,
     response_model=UploadFileResponse,
+    tags=["Files"],
+    description="Upload a file to Skyvern's storage. Returns the S3 URI and a presigned URL for accessing the file. Maximum file size is configured in settings.",
+    summary="Upload file",
+    responses={
+        200: {"description": "Successfully uploaded file"},
+        413: {"description": "File size exceeds maximum allowed size"},
+        500: {"description": "Failed to upload file to storage"},
+    },
 )
-@base_router.post("/upload_file/", include_in_schema=False)
-@legacy_base_router.post("/upload_file", include_in_schema=False)
-@legacy_base_router.post("/upload_file/", include_in_schema=False)
+@base_router.post("/upload_file/", response_model=UploadFileResponse, include_in_schema=False)
+@legacy_base_router.post("/upload_file", response_model=UploadFileResponse, include_in_schema=False)
+@legacy_base_router.post("/upload_file/", response_model=UploadFileResponse, include_in_schema=False)
 async def upload_file(
     file: UploadFile = Depends(_validate_file_size),
     current_org: Organization = Depends(org_auth_service.get_current_org),

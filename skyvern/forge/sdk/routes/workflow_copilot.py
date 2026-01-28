@@ -356,7 +356,19 @@ def _process_workflow_yaml(
     )
 
 
-@base_router.post("/workflow/copilot/chat-post", include_in_schema=False)
+@base_router.post(
+    "/workflow/copilot/chat-post",
+    tags=["Workflow Copilot"],
+    description="Chat with the Workflow Copilot to create, modify, and debug workflows using AI assistance. Returns a Server-Sent Events (SSE) stream with real-time updates.",
+    summary="Chat with Workflow Copilot",
+    responses={
+        200: {"description": "Successfully initiated chat stream"},
+        400: {"description": "Invalid request parameters"},
+        404: {"description": "Chat not found"},
+        500: {"description": "LLM provider error or internal server error"},
+    },
+)
+@base_router.post("/workflow/copilot/chat-post/", include_in_schema=False)
 async def workflow_copilot_chat_post(
     request: Request,
     chat_request: WorkflowCopilotChatRequest,
@@ -517,7 +529,17 @@ async def workflow_copilot_chat_post(
     return FastAPIEventSourceStream.create(request, stream_handler)
 
 
-@base_router.get("/workflow/copilot/chat-history", include_in_schema=False)
+@base_router.get(
+    "/workflow/copilot/chat-history",
+    response_model=WorkflowCopilotChatHistoryResponse,
+    tags=["Workflow Copilot"],
+    description="Get the chat history for a specific workflow, including the latest chat messages and any proposed workflow changes.",
+    summary="Get chat history",
+    responses={
+        200: {"description": "Successfully retrieved chat history"},
+    },
+)
+@base_router.get("/workflow/copilot/chat-history/", include_in_schema=False)
 async def workflow_copilot_chat_history(
     workflow_permanent_id: str,
     organization: Organization = Depends(org_auth_service.get_current_org),
@@ -539,7 +561,18 @@ async def workflow_copilot_chat_history(
 
 
 @base_router.post(
-    "/workflow/copilot/clear-proposed-workflow", include_in_schema=False, status_code=status.HTTP_204_NO_CONTENT
+    "/workflow/copilot/clear-proposed-workflow",
+    tags=["Workflow Copilot"],
+    description="Clear the proposed workflow from a chat session and optionally set the auto-accept preference for future proposals.",
+    summary="Clear proposed workflow",
+    status_code=status.HTTP_204_NO_CONTENT,
+    responses={
+        204: {"description": "Successfully cleared proposed workflow"},
+        404: {"description": "Chat not found"},
+    },
+)
+@base_router.post(
+    "/workflow/copilot/clear-proposed-workflow/", include_in_schema=False, status_code=status.HTTP_204_NO_CONTENT
 )
 async def workflow_copilot_clear_proposed_workflow(
     clear_request: WorkflowCopilotClearProposedWorkflowRequest,

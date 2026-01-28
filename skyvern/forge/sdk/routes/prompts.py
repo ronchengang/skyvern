@@ -46,9 +46,18 @@ def resolve_template_name(use_case: str) -> str:
 
 @base_router.post(
     "/prompts/improve",
+    response_model=ImprovePromptResponse,
     tags=["Prompts"],
-    description="Improve a prompt based on a specific use-case",
+    description="Improve a prompt for a specific use-case using AI. Currently supports use-cases like 'new_workflow' and 'task_v2_prompt' for optimizing prompts for AI browser agents.",
     summary="Improve prompt",
+    responses={
+        200: {"description": "Successfully improved prompt"},
+        400: {"description": "Failed to improve prompt due to LLM error or invalid request"},
+    },
+)
+@base_router.post(
+    "/prompts/improve/",
+    response_model=ImprovePromptResponse,
     include_in_schema=False,
 )
 async def improve_prompt(

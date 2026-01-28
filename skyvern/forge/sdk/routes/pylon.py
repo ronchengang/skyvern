@@ -13,10 +13,20 @@ LOG = structlog.get_logger()
 
 @base_router.get(
     "/pylon/email_hash",
-    include_in_schema=False,
     response_model=PylonHash,
+    tags=["Pylon"],
+    description="Generate a HMAC-SHA256 hash of an email address for Pylon identity verification. Uses the PYLON_IDENTITY_VERIFICATION_SECRET from settings.",
+    summary="Get Pylon email hash",
+    responses={
+        200: {"description": "Successfully generated email hash"},
+    },
 )
-def get_pylon_email_hash(email: str = Query(...)) -> PylonHash:
+@base_router.get(
+    "/pylon/email_hash/",
+    response_model=PylonHash,
+    include_in_schema=False,
+)
+def get_pylon_email_hash(email: str = Query(..., description="Email address to hash")) -> PylonHash:
     no_hash = "???-no-hash-???"
     secret = settings.PYLON_IDENTITY_VERIFICATION_SECRET
 

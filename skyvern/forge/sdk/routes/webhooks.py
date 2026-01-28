@@ -39,16 +39,29 @@ LOG = structlog.get_logger()
 
 @legacy_base_router.post(
     "/internal/test-webhook",
+    response_model=TestWebhookResponse,
     tags=["Internal"],
-    description="Test a webhook endpoint by sending a sample payload",
+    description="Test a webhook endpoint by sending a sample payload. Validates the URL, builds a sample signed payload, and sends it to the target URL. Useful for verifying webhook receivers can be reached and HMAC signature verification works.",
     summary="Test webhook endpoint",
-    include_in_schema=False,
+    responses={
+        200: {"description": "Successfully sent test webhook"},
+        400: {"description": "Invalid webhook URL or blocked by SSRF protection"},
+    },
 )
 @base_router.post(
     "/internal/test-webhook",
+    response_model=TestWebhookResponse,
     tags=["Internal"],
-    description="Test a webhook endpoint by sending a sample payload",
+    description="Test a webhook endpoint by sending a sample payload. Validates the URL, builds a sample signed payload, and sends it to the target URL. Useful for verifying webhook receivers can be reached and HMAC signature verification works.",
     summary="Test webhook endpoint",
+    responses={
+        200: {"description": "Successfully sent test webhook"},
+        400: {"description": "Invalid webhook URL or blocked by SSRF protection"},
+    },
+)
+@base_router.post(
+    "/internal/test-webhook/",
+    response_model=TestWebhookResponse,
     include_in_schema=False,
 )
 async def test_webhook(
@@ -197,16 +210,31 @@ async def test_webhook(
 
 @legacy_base_router.get(
     "/internal/runs/{run_id}/test-webhook",
-    tags=["Internal"],
     response_model=RunWebhookPreviewResponse,
+    tags=["Internal"],
+    description="Preview the webhook payload and headers that would be sent when replaying a completed run's webhook. Useful for debugging and verifying the payload format before triggering a replay.",
     summary="Preview webhook replay payload",
-    include_in_schema=False,
+    responses={
+        200: {"description": "Successfully generated webhook preview"},
+        400: {"description": "Organization lacks API key or replay preconditions failed"},
+        404: {"description": "Run not found"},
+    },
 )
 @base_router.get(
     "/internal/runs/{run_id}/test-webhook",
-    tags=["Internal"],
     response_model=RunWebhookPreviewResponse,
+    tags=["Internal"],
+    description="Preview the webhook payload and headers that would be sent when replaying a completed run's webhook. Useful for debugging and verifying the payload format before triggering a replay.",
     summary="Preview webhook replay payload",
+    responses={
+        200: {"description": "Successfully generated webhook preview"},
+        400: {"description": "Organization lacks API key or replay preconditions failed"},
+        404: {"description": "Run not found"},
+    },
+)
+@base_router.get(
+    "/internal/runs/{run_id}/test-webhook/",
+    response_model=RunWebhookPreviewResponse,
     include_in_schema=False,
 )
 async def preview_webhook_replay(
@@ -250,16 +278,31 @@ async def preview_webhook_replay(
 
 @legacy_base_router.post(
     "/internal/runs/{run_id}/test-webhook",
-    tags=["Internal"],
     response_model=RunWebhookReplayResponse,
+    tags=["Internal"],
+    description="Replay a completed run's webhook to the stored URL or an override URL. Re-sends the original webhook payload with proper HMAC signature to test or retry webhook delivery.",
     summary="Replay webhook for a completed run",
-    include_in_schema=False,
+    responses={
+        200: {"description": "Successfully triggered webhook replay"},
+        400: {"description": "No target URL available, missing API key, or replay validation failed"},
+        404: {"description": "Run not found"},
+    },
 )
 @base_router.post(
     "/internal/runs/{run_id}/test-webhook",
-    tags=["Internal"],
     response_model=RunWebhookReplayResponse,
+    tags=["Internal"],
+    description="Replay a completed run's webhook to the stored URL or an override URL. Re-sends the original webhook payload with proper HMAC signature to test or retry webhook delivery.",
     summary="Replay webhook for a completed run",
+    responses={
+        200: {"description": "Successfully triggered webhook replay"},
+        400: {"description": "No target URL available, missing API key, or replay validation failed"},
+        404: {"description": "Run not found"},
+    },
+)
+@base_router.post(
+    "/internal/runs/{run_id}/test-webhook/",
+    response_model=RunWebhookReplayResponse,
     include_in_schema=False,
 )
 async def trigger_webhook_replay(

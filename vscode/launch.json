@@ -1,0 +1,19 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug skyvern.forge",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "skyvern.forge",
+      "python": "${workspaceFolder}/.venv/bin/python",
+      "console": "integratedTerminal",
+      "env": {
+        "LOG_LEVEL": "DEBUG",
+        "DEBUG_MODE": "true",
+        "LOG_RAW_API_REQUESTS": "true"
+      },
+      "envFile": "${workspaceFolder}/.env"
+    }
+  ]
+}
