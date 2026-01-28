@@ -179,7 +179,8 @@ async def run_task(
             )
             # What if it's a SDK request with browser_session_id?
             url = task_generation.url
-            navigation_goal = task_generation.navigation_goal or run_request.prompt
+            # navigation_goal = task_generation.navigation_goal or run_request.prompt
+            navigation_goal = f'navigation_goal:{task_generation.navigation_goal}, user_prompt:{run_request.prompt}'
             if run_request.engine in CUA_ENGINES:
                 navigation_goal = run_request.prompt
             navigation_payload = task_generation.navigation_payload
